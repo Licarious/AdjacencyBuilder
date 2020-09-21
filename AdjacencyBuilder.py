@@ -28,12 +28,14 @@ fullProvColorList = []
 
 tmpAdjList = []
 objAdjList = []
+directAdj = []
 
 baronlyList = []
 barrolyNameList = []
 
 riverArray = []
 riverBorderArray = []
+riverBoldBorderArray = []
 
 mapDefinition = open("Input/definition.csv")
 defaultMap = open("Input/default.map")
@@ -177,21 +179,108 @@ def drawBorderMat(name):
                         riverBorderMat[x+1,y] = (0,0,0,255)
                 #print("%s - %i,%i"%(prov.name,x,y))
     drawingBorderMap.save("Output/%s.png"%name)
+def drawBoldBorderMat(name):
+    xRange= range(0,provMap.size[0],1)
+    yRange= range(0,provMap.size[1],1)
+    if "River" in name:
+        tmpDrawingMap = Image.open("Output/RiverMat.png")
+    else:
+        tmpDrawingMap = Image.open("Output/SeaMat.png")
+    drawReader = tmpDrawingMap.load()
+    drawingBorderMap = Image.open("Input/provinces.png")
+    drawingBorderMap.putalpha(0)
+    riverBorderMat = drawingBorderMap.load()
+    for y in yRange:
+        for x in xRange:
+            if drawReader[x,y] == (0,0,0,255):
+                #print("%s,%s"%(x,y))
+                for i in range(0,3):
+                    if y-i>0:
+                        if not drawReader[x,y-i] == (0,0,0,255):
+                            riverBorderMat[x,y-i] = (0,0,0,255)
+                    if y+i<provMap.size[1]-1:
+                        if not drawReader[x,y+i] == (0,0,0,255):
+                            riverBorderMat[x,y+i] = (0,0,0,255)
+                    if x-i>0:
+                        if not drawReader[x-i,y] == (0,0,0,255):
+                            riverBorderMat[x-i,y] = (0,0,0,255)
+                    if x+i<provMap.size[0]-1:
+                        if not drawReader[x+i,y] == (0,0,0,255):
+                            riverBorderMat[x+i,y] = (0,0,0,255)
+                    #print("%s - %i,%i"%(prov.name,x,y))
+                if y>0 and x>0:
+                    if not drawReader[x-1,y-1] == (0,0,0,255):
+                        riverBorderMat[x-1,y-1] = (0,0,0,255)
+                if y<provMap.size[1]-1 and x>0:
+                    if not drawReader[x-1,y+1] == (0,0,0,255):
+                        riverBorderMat[x-1,y+1] = (0,0,0,255)
+                if y<provMap.size[1]-1 and x<provMap.size[0]-1:
+                    if not drawReader[x+1,y+1] == (0,0,0,255):
+                        riverBorderMat[x+1,y+1] = (0,0,0,255)
+                if y>0 and x<provMap.size[0]-1:
+                    if not drawReader[x+1,y-1] == (0,0,0,255):
+                        riverBorderMat[x+1,y-1] = (0,0,0,255)
+    drawingBorderMap.save("Output/%s.png"%name)
+
+
+def directConections(x,y):
+    #print("%i,%i"%(x,y))
+    if x+1 < len(riverArray[y]):
+        tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+1,y)))].id)
+        if tmpTuple[0] == tmpTuple[1]:
+            pass
+        else:
+            tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+            if tmpTuple in directAdj or tmpTuple2 in directAdj:
+                pass
+            else:
+                directAdj.append(tmpTuple)
+    if y+1 < len(riverArray):
+        tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y+1)))].id)
+        if tmpTuple[0] == tmpTuple[1]:
+            pass
+        else:
+            tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+            if tmpTuple in directAdj or tmpTuple2 in directAdj:
+                pass
+            else:
+                directAdj.append(tmpTuple)
+    if y-1 >= 0:
+        tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y-1)))].id)
+        if tmpTuple[0] == tmpTuple[1]:
+            pass
+        else:
+            tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+            if tmpTuple in directAdj or tmpTuple2 in directAdj:
+                pass
+            else:
+                directAdj.append(tmpTuple)
+    if x-1 >= 0:
+        tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x-1,y)))].id)
+        if tmpTuple[0] == tmpTuple[1]:
+            pass
+        else:
+            tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+            if tmpTuple in directAdj or tmpTuple2 in directAdj:
+                pass
+            else:
+                directAdj.append(tmpTuple)
+                
+    pass
+
 def radialVector2(x,y):
-    lenght = 8
+    lenght = 8   
     if riverArray[y][x+1] == 1:
         for i in range(2,lenght):
             if x+i > len(riverArray[y]):
                 break
             if riverBorderArray[y][x+i] == 1:
-                if fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id == fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y)))].id:
+                tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y)))].id)
+                if tmpTuple[0] == tmpTuple[1]:
                     pass
                 else:
-                    tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y)))].id)
-                    tmpTuple2 = (fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id)
-                    if tmpTuple in tmpAdjList:
-                        pass
-                    elif tmpTuple2 in tmpAdjList:
+                    tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+                    if tmpTuple in tmpAdjList or tmpTuple2 in tmpAdjList or tmpTuple in directAdj or tmpTuple2 in directAdj:
                         pass
                     else:
                         tmpAdjList.append(tmpTuple)
@@ -205,19 +294,18 @@ def radialVector2(x,y):
                         except:
                             pass
                         break
+        pass
     if riverArray[y+1][x+1] == 1:
         for i in range(2,lenght):
             if x+i > len(riverArray[y]) or y+i > len(riverArray):
                 break
             if riverBorderArray[y+i][x+i] == 1:
-                if fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id == fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y+i)))].id:
+                tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y+i)))].id)
+                if tmpTuple[0] == tmpTuple[1]:
                     pass
                 else:
-                    tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y+i)))].id)
-                    tmpTuple2 = (fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y+i)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id)
-                    if tmpTuple in tmpAdjList:
-                        pass
-                    elif tmpTuple2 in tmpAdjList:
+                    tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+                    if tmpTuple in tmpAdjList or tmpTuple2 in tmpAdjList or tmpTuple in directAdj or tmpTuple2 in directAdj:
                         pass
                     else:
                         tmpAdjList.append(tmpTuple)
@@ -231,19 +319,18 @@ def radialVector2(x,y):
                         except:
                             pass
                         break
+        pass
     if riverArray[y+1][x] == 1:
         for i in range(2,lenght):
             if y+i > len(riverArray):
                 break
             if riverBorderArray[y+i][x] == 1:
-                if fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id == fullProvList[fullProvColorList.index(provMap.getpixel((x,y+i)))].id:
+                tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y+i)))].id)
+                if tmpTuple[0] == tmpTuple[1]:
                     pass
                 else:
-                    tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y+i)))].id)
-                    tmpTuple2 = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y+i)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id)
-                    if tmpTuple in tmpAdjList:
-                        pass
-                    elif tmpTuple2 in tmpAdjList:
+                    tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+                    if tmpTuple in tmpAdjList or tmpTuple2 in tmpAdjList or tmpTuple in directAdj or tmpTuple2 in directAdj:
                         pass
                     else:
                         tmpAdjList.append(tmpTuple)
@@ -257,19 +344,18 @@ def radialVector2(x,y):
                         except:
                             pass
                         break
+        pass
     if riverArray[y-1][x+1] == 1:
         for i in range(2,lenght):
             if x+i > len(riverArray[y]) or y-i <0:
                 break
             if riverBorderArray[y-i][x+i] == 1:
-                if fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id == fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y+i)))].id:
+                tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y-i)))].id)
+                if tmpTuple[0] == tmpTuple[1]:
                     pass
                 else:
-                    tmpTuple = (fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y-i)))].id)
-                    tmpTuple2 = (fullProvList[fullProvColorList.index(provMap.getpixel((x+i,y-i)))].id, fullProvList[fullProvColorList.index(provMap.getpixel((x,y)))].id)
-                    if tmpTuple in tmpAdjList:
-                        pass
-                    elif tmpTuple2 in tmpAdjList:
+                    tmpTuple2 = (tmpTuple[1],tmpTuple[0])
+                    if tmpTuple in tmpAdjList or tmpTuple2 in tmpAdjList or tmpTuple in directAdj or tmpTuple2 in directAdj:
                         pass
                     else:
                         tmpAdjList.append(tmpTuple)
@@ -283,6 +369,9 @@ def radialVector2(x,y):
                         except:
                             pass
                         break
+        pass
+
+    
 
     pass
 def radialChecker2():
@@ -291,11 +380,14 @@ def radialChecker2():
     borderMat = Image.open("Output/RiverBorderMat.png")
     riverBorderMat = borderMat.load()
     rMat = Image.open("Output/RiverMat.png")
-    riverMat = borderMat.load()
+    riverMat = rMat.load()
+    bbMat = Image.open("Output/RiverBoldBorderMat.png")
+    boldMat = bbMat.load()
     print("Gathering River Data:")
     for y in yRange:
         tmpBorderArray = []
         tmpRiverArray = []
+        tmpBoldArray = []
         if y%512 ==0:
             print("\t%i%%"%((y*100)/provMap.size[1]))
             #print()
@@ -310,12 +402,31 @@ def radialChecker2():
                 tmpRiverArray.append(1)
             else:
                 tmpRiverArray.append(0)
+            if boldMat[x,y] == (0,0,0,255):
+                #radialVector(x,y)
+                tmpBoldArray.append(1)
+            else:
+                tmpBoldArray.append(0)
         riverBorderArray.append(tmpBorderArray)
         riverArray.append(tmpRiverArray)
+        riverBoldBorderArray.append(tmpBoldArray)
         #sum1 = sum(tmpBorderArray)
         
     count = 0
     count2 = 0
+    print("Getting Direct Conections:")
+    for y in range(0,len(riverBoldBorderArray)):
+        
+        if y%512 ==0:
+            print("\t%i%%"%((y*100)/provMap.size[1]))
+        if sum(riverBoldBorderArray[y]) >0:
+            #print(sum(riverBorderArray[y]))
+            count +=1
+            for x in range(0,len(riverBoldBorderArray[y])):
+                if riverBoldBorderArray[y][x] == 1:
+                    directConections(x,y)
+                    count2 +=1
+
     print("Generating Adjacencies:")
     for y in range(0,len(riverBorderArray)):
         
@@ -328,8 +439,8 @@ def radialChecker2():
                 if riverBorderArray[y][x] == 1:
                     radialVector2(x,y)
                     count2 +=1
-    print(count)
-    print(count2)   
+    #print(count)
+    #print(count2)   
     pass
 
 def getBaronies():
@@ -366,16 +477,18 @@ def writeAdj():
     adjVFile = open("Input/adjacencies.csv")
     adjCSV.write("From;To;Type;Through;start_x;start_y;stop_x;stop_y;Comment\n")
     count = 0
-    print("Discarded Adjacencies:")
+    #print("Discarded Adjacencies:")
     for line in adjVFile:
         if ";sea;" in line:
             adjCSV.write(line)
     for adj in objAdjList:
         if adj.fromID in baronlyList and adj.toID in baronlyList:
-            adjCSV.write("%s;%s;river_large;%s;-1;-1;-1;-1;%s ~ %s\n"%(adj.fromID,adj.toID,adj.overID,barrolyNameList[baronlyList.index(adj.fromID)],barrolyNameList[baronlyList.index(adj.toID)]))
-            count +=1
+            if adj.overID in riverList:
+                adjCSV.write("%s;%s;river_large;%s;-1;-1;-1;-1;%s ~ %s\n"%(adj.fromID,adj.toID,adj.overID,barrolyNameList[baronlyList.index(adj.fromID)],barrolyNameList[baronlyList.index(adj.toID)]))
+                count +=1
         else:
-            print("%s ~ %s"%(adj.fromID,adj.toID))
+            #print("%s ~ %s"%(adj.fromID,adj.toID))
+            pass
     adjCSV.write("-1;-1;;-1;-1;-1;-1;-1;")
     adjCSV.close()
     print("Created Adjacencies: %i"%count)
@@ -396,11 +509,12 @@ total = len(riverProvList)
 print("%i rivers"%total)
 drawMat(riverProvList,"RiverMat")
 drawBorderMat("RiverBorderMat")
+drawBoldBorderMat("RiverBoldBorderMat")
 radialChecker2()
 getBaronies()
 writeAdj()
 
 
-#print(len(tmpAdjList))
+print("Direct Adj: %i"%len(directAdj))
 ts2 = time.time()
 print("%g Seconds"%(ts2 - ts))
