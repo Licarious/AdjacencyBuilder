@@ -1,6 +1,9 @@
 from PIL import Image
 from os import path
 import time
+import glob
+
+game = "IR" #CK3 or IR
 
 class ProvinceDefinition:
     id = 0
@@ -14,6 +17,10 @@ class PotentialAdjacency:
     fromID = 0
     toID = 0
     overID = 0
+    x1=-1
+    x2=-1
+    y1=-1
+    y2=-1
     
 
 riverList = []
@@ -40,7 +47,6 @@ riverBoldBorderArray = []
 mapDefinition = open("Input/definition.csv")
 defaultMap = open("Input/default.map")
 provMap = Image.open("Input/provinces.png")
-landedTitles = open("Input/00_landed_titles.txt",'r',encoding='utf-8',errors='ignore')
 borderIDList = []
 total=0
 
@@ -444,6 +450,7 @@ def radialChecker2():
     pass
 
 def getBaronies():
+    landedTitles = open("Input/00_landed_titles.txt",'r',encoding='utf-8',errors='ignore')
     indintation = 0
     tmpBar= ""
     for line in landedTitles:
@@ -471,7 +478,61 @@ def getBaronies():
                 elif "#" in element:
                     #print("c: "+element)
                     break
-pass
+    pass
+def getSettlement():
+    provFiles=glob.glob("Input/provinces/*.txt")
+    for file in provFiles:
+        landedTitles = open(file,'r',encoding='utf-8',errors='ignore')
+        #print(file)
+        indintation = 0
+        tmpBar= ""
+        tmpID = -1
+        checker = 0
+        for line in landedTitles:
+            if indintation == 0:
+                if "=" in line:
+                    word = line.strip().strip("\ufeff").split("=")
+                    try:
+                        tmpID = int(word[0].strip())
+                        tmpBar = word[1].replace("{","").replace("#","").strip()
+                        #baronlyList.append(tmpID)
+                        #barrolyNameList.append(tmpBar)
+                    except:
+                        pass
+            if indintation == 1:
+                if "terrain" in line:
+                    if "\"\"" in line:
+                        pass
+                    else:
+                        checker+=1
+                if "religion" in line:
+                    if "\"\"" in line:
+                        pass
+                    else:
+                        checker+=1
+                if checker >1:
+                    if tmpID>-1:
+                        baronlyList.append(tmpID)
+                        barrolyNameList.append(tmpBar)
+                        tmpBar= ""
+                        tmpID = -1
+                        checker = 0
+            if "{" in line or "}" in line:
+                #print("l: "+line)
+                for element in list(line.strip()):
+                    if "{" in element:
+                        indintation +=1
+                        #print("s: "+element)
+                    elif "}" in element:
+                        indintation -=1
+                        if indintation == 0:
+                            checker = 0
+                        #print("e: "+element)
+                    elif "#" in element:
+                        #print("c: "+element)
+                        break
+
+    pass
 def writeAdj():
     adjCSV = open("Output/adjacencies.csv", "w", encoding='utf-8-sig')
     adjVFile = open("Input/adjacencies.csv")
@@ -484,7 +545,10 @@ def writeAdj():
     for adj in objAdjList:
         if adj.fromID in baronlyList and adj.toID in baronlyList:
             if adj.overID in riverList:
-                adjCSV.write("%s;%s;river_large;%s;-1;-1;-1;-1;%s ~ %s\n"%(adj.fromID,adj.toID,adj.overID,barrolyNameList[baronlyList.index(adj.fromID)],barrolyNameList[baronlyList.index(adj.toID)]))
+                if game.upper() == "CK3":
+                    adjCSV.write("%s;%s;river_large;%s;-1;-1;-1;-1;%s ~ %s\n"%(adj.fromID,adj.toID,adj.overID,barrolyNameList[baronlyList.index(adj.fromID)],barrolyNameList[baronlyList.index(adj.toID)]))
+                elif game.upper() == "IR":
+                    adjCSV.write("%s;%s;river_large;%s;0;0;0;0;%s ~ %s\n"%(adj.fromID,adj.toID,adj.overID,barrolyNameList[baronlyList.index(adj.fromID)],barrolyNameList[baronlyList.index(adj.toID)]))
                 count +=1
         else:
             #print("%s ~ %s"%(adj.fromID,adj.toID))
@@ -511,9 +575,13 @@ drawMat(riverProvList,"RiverMat")
 drawBorderMat("RiverBorderMat")
 drawBoldBorderMat("RiverBoldBorderMat")
 radialChecker2()
-getBaronies()
+if game.upper() == "CK3":
+    getBaronies()
+elif game.upper() == "IR":
+    getSettlement()
+else:
+    print("%s is not a recognised game"%game)
 writeAdj()
-
 
 print("Direct Adj: %i"%len(directAdj))
 ts2 = time.time()
