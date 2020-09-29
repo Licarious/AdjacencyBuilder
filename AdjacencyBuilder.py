@@ -3,7 +3,7 @@ from os import path
 import time
 import glob
 
-game = "IR" #CK3 or IR
+game = "CK3" #CK3 or IR
 
 class ProvinceDefinition:
     id = 0
@@ -74,7 +74,7 @@ def readProvinceDeff():
                 province.blue = int(tmpline[3])
                 province.name = tmpline[4]
                 fullProvList.append(province)
-                fullProvColorList.append((province.red,province.green,province.blue))
+                fullProvColorList.append((province.red,province.green,province.blue,255))
             except:
                 pass
     pass
@@ -129,7 +129,7 @@ def drawMat(riverProvList,name):
     tupleList = []
     lastY = []
     for prov in riverProvList:
-        tupleList.append((prov.red,prov.green,prov.blue))
+        tupleList.append((prov.red,prov.green,prov.blue,255))
         lastY.append(-1)
 
     print("Drawing Maps:")
